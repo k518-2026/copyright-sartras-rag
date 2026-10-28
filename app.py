@@ -14,7 +14,7 @@ load_dotenv()
 
 # Page configuration
 st.set_page_config(
-    page_title="著作権法・SARTRAS 法令相談AI",
+    page_title="著作権法・関連法務 総合AIエキスパート",
     page_icon="⚖️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -42,14 +42,18 @@ st.markdown("""
 # Sidebar
 st.sidebar.title("📖 このシステムについて")
 st.sidebar.info("""
-**著作権法・判例・SARTRAS 相談AI** は、学校教育やオンライン授業における著作物の利用ルールについて、公式法令とガイドラインを根拠に即時回答する無料の公開アシスタントです。
+**著作権法・関連法務 総合AIエキスパート** は、著作権法（全文）、施行令、施行規則に加え、**民法、不正競争防止法、プロバイダ責任制限法、独占禁止法、刑法** および **SARTRAS運用指針・重要判例** を網羅した法務特化RAGシステムです。
 """)
 
-st.sidebar.markdown("### 📚 参照ナレッジベース")
+st.sidebar.markdown("### 📚 参照法令・データベース")
 st.sidebar.markdown("""
-- **[著作権法](https://laws.e-gov.go.jp/law/345AC0000000048)**: 第30条(私的利用), 第32条(引用), 第35条(学校教育・公衆送信補償金)等
-- **[SARTRAS運用指針](https://sartras.or.jp/)**: 授業目的公衆送信補償金制度、問題集・ドリル等の利用制限
-- **[裁判所 判例検索](https://www.courts.go.jp/hanrei/search7/index.html)**: 引用要件（最判昭55 パロディ事件等）、試験問題利用の限界
+- **[著作権法・施行令・施行規則](https://laws.e-gov.go.jp/law/345AC0000000048)**: 全条文（第1条〜第124条＋附則）
+- **[民法](https://laws.e-gov.go.jp/law/129AC0000000089)**: 不法行為（709条）、契約・損害賠償（415条・416条）等
+- **[不正競争防止法](https://laws.e-gov.go.jp/law/405AC0000000047)**: 形態模倣・営業秘密・商品表示
+- **[プロバイダ責任制限法](https://laws.e-gov.go.jp/law/413AC0000000137)**: 発信者情報開示請求、差止・送信防止
+- **[独占禁止法](https://laws.e-gov.go.jp/law/322AC0000000054)**: 知的財産権の行使と独禁法21条
+- **[SARTRAS運用指針](https://sartras.or.jp/)**: 授業目的公衆送信補償金制度
+- **[裁判所 判例検索](https://www.courts.go.jp/hanrei/search7/index.html)**: 引用要件・教育利用の限界判例
 """)
 
 st.sidebar.markdown("---")
@@ -61,8 +65,8 @@ api_key = get_secret("GEMINI_API_KEY") if provider == "gemini" else get_secret("
 model_name = get_secret("LLM_MODEL", "gemini-3.8-flash")
 
 # Main Interface
-st.title("⚖️ 著作権法・判例・SARTRAS 相談アシスタント")
-st.caption("教育機関における著作物の複製・オンライン公衆送信・引用の適法性を、公式法令と運用指針に基づいて判定・解説します。")
+st.title("⚖️ 著作権法・関連法務 総合AIエキスパート")
+st.caption("著作権法（全文）、民法、不正競争防止法、プロバイダ責任法、独占禁止法、SARTRAS指針、判例を横断検索して論理的に回答します。")
 
 # Session state initialization
 if "messages" not in st.session_state:
@@ -101,8 +105,8 @@ if user_input:
         st.markdown(user_input)
 
     # 1. Retrieve relevant legal context
-    with st.spinner("根拠条文・SARTRAS指針・判例を検索中..."):
-        sources = search_knowledge(user_input, top_k=3)
+    with st.spinner("著作権法・関連法令・SARTRAS指針・判例を横断検索中..."):
+        sources = search_knowledge(user_input, top_k=4)
 
     context_blocks = []
     for s in sources:
@@ -110,15 +114,15 @@ if user_input:
     context_str = "\n\n".join(context_blocks)
 
     # 2. Build structured system prompt
-    system_prompt = f"""あなたは日本の著作権法、知財裁判例、およびSARTRAS（授業目的公衆送信補償金制度）の専門アドバイザーです。
-以下の【提供された法令・ガイドライン・判例】の記述を絶対的な根拠として、質問に明快かつ論理的に回答してください。
+    system_prompt = f"""あなたは日本の著作権法および関連法務（民法、不正競争防止法、プロバイダ責任制限法、独占禁止法、刑法）、知財裁判例、SARTRASの最高峰エキスパートです。
+以下の【提供された法令・ガイドライン・判例】の記述を絶対的な根拠として、多角的かつ論理的に回答してください。
 
-# 回答のルール
-1. 根拠条文（例:「著作権法第35条第1項ただし書」「SARTRAS共通目的運用指針」等）を必ず明示して解説してください。
-2. 補償金支払義務の有無や、認められる利用形態・認められない例外（ドリルの全員配布等）を明確に伝えてください。
-3. 参照資料に記載のない推測は避け、「法令・指針上明確な規定がない」旨を注記してください。
+# エキスパート回答のルール
+1. 該当する法令名と条項番号（例:「著作権法第41条」「民法第709条（不法行為）」「不正競争防止法第2条第1項」「プロバイダ責任制限法第3条」等）を必ず明示してください。
+2. 著作権法上の判断だけでなく、民事上の損害賠償・不法行為責任や、インターネット上での開示請求・削除、不正競争の観点など、関連法が関係する場合は複合的な視点からわかりやすく整理してください。
+3. 参照資料に直接記載のない事実関係については、「法令・ガイドライン上は明文規定がないため、契約約款や実務慣行の確認が必要」など、法的に誠実な注記をしてください。
 4. 回答の最後には必ず以下の免責事項を記載してください：
-「※ 本回答はAIによる情報提供であり、弁護士法に基づく法的助言ではありません。具体的な紛争や運用判断については弁護士やSARTRASにお問い合わせください。」
+「※ 本回答はAIによる情報提供であり、弁護士法第72条に基づく個別具体的な法的助言ではありません。実務上の判断や紛争対応にあたっては、弁護士または所管官庁（文化庁等）にご相談ください。」
 
 【提供された法令・ガイドライン・判例】:
 {context_str}
