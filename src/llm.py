@@ -10,6 +10,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+def get_secret(key_name: str, default: str = "") -> str:
+    """Helper to fetch config from st.secrets, then os.getenv."""
+    try:
+        import streamlit as st
+        if key_name in st.secrets:
+            return st.secrets[key_name]
+    except Exception:
+        pass
+    return os.getenv(key_name, default)
+
 def generate_streaming_response(
     messages: List[Dict[str, str]],
     provider: str = None,
@@ -17,19 +27,19 @@ def generate_streaming_response(
     model_name: str = None
 ) -> Generator[str, None, None]:
     """Generates streaming text from the selected LLM provider."""
-    provider = provider or os.getenv("LLM_PROVIDER", "gemini").lower()
+    provider = (provider or get_secret("LLM_PROVIDER", "gemini")).lower()
     
     if provider == "gemini":
         from google import genai
         from google.genai import types
         
-        gemini_key = api_key or os.getenv("GEMINI_API_KEY")
+        gemini_key = api_key or get_secret("GEMINI_API_KEY")
         if not gemini_key:
-            yield "【エラー】GEMINI_API_KEY が設定されていません。サイドバーまたは .env で設定してください。"
+            yield "【エラー】GEMINI_API_KEY が設定されていません。Streamlit Secrets またはサイドバーで設定してください。"
             return
             
         client = genai.Client(api_key=gemini_key)
-        target_model = model_name or os.getenv("LLM_MODEL", "gemini-2.5-flash")
+        target_model = model_name or get_secret("LLM_MODEL", "gemini-2.5-flash")
         
         # Extract system prompt and user conversation
         system_content = ""
@@ -62,13 +72,13 @@ def generate_streaming_response(
     elif provider == "openai":
         from openai import OpenAI
         
-        openai_key = api_key or os.getenv("OPENAI_API_KEY")
+        openai_key = api_key or get_secret("OPENAI_API_KEY")
         if not openai_key:
-            yield "【エラー】OPENAI_API_KEY が設定されていません。サイドバーまたは .env で設定してください。"
+            yield "【エラー】OPENAI_API_KEY が設定されていません。Streamlit Secrets またはサイドバーで設定してください。"
             return
             
         client = OpenAI(api_key=openai_key)
-        target_model = model_name or os.getenv("LLM_MODEL", "gpt-4o-mini")
+        target_model = model_name or get_secret("LLM_MODEL", "gpt-4o-mini")
         
         try:
             stream = client.chat.completions.create(

@@ -8,7 +8,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.db import search_knowledge
-from src.llm import generate_streaming_response
+from src.llm import generate_streaming_response, get_secret
 
 load_dotenv()
 
@@ -42,7 +42,7 @@ st.markdown("""
 # Sidebar
 st.sidebar.title("⚙️ AI モデル & API設定")
 
-default_provider = os.getenv("LLM_PROVIDER", "gemini")
+default_provider = get_secret("LLM_PROVIDER", "gemini")
 provider = st.sidebar.selectbox(
     "LLM プロバイダー",
     ["gemini", "openai"],
@@ -52,13 +52,13 @@ provider = st.sidebar.selectbox(
 
 api_key = ""
 if provider == "gemini":
-    env_gemini = os.getenv("GEMINI_API_KEY", "")
+    env_gemini = get_secret("GEMINI_API_KEY", "")
     api_key = st.sidebar.text_input(
         "Gemini API Key",
         value=env_gemini,
         type="password",
         placeholder="AIzaSy...",
-        help="Google AI Studio (https://aistudio.google.com/) で取得したAPIキーを入力"
+        help="Google AI Studio (https://aistudio.google.com/) で取得したAPIキー。Secrets設定済みの場合は自動入力されます"
     )
     model_name = st.sidebar.selectbox(
         "モデル選択",
@@ -66,13 +66,13 @@ if provider == "gemini":
         index=0
     )
 else:
-    env_openai = os.getenv("OPENAI_API_KEY", "")
+    env_openai = get_secret("OPENAI_API_KEY", "")
     api_key = st.sidebar.text_input(
         "OpenAI API Key",
         value=env_openai,
         type="password",
         placeholder="sk-...",
-        help="OpenAI Dashboard で取得したAPIキーを入力"
+        help="OpenAI Dashboard で取得したAPIキー。Secrets設定済みの場合は自動入力されます"
     )
     model_name = st.sidebar.selectbox(
         "モデル選択",
