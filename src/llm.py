@@ -58,17 +58,47 @@ def generate_streaming_response(
             temperature=0.1
         )
         
-        try:
-            response = client.models.generate_content_stream(
-                model=target_model,
-                contents=contents,
-                config=config
-            )
-            for chunk in response:
-                if chunk.text:
-                    yield chunk.text
-        except Exception as e:
-            yield f"\n【Gemini API エラー】: {str(e)}"
+        # Multi-model fallback list in case of 503 / 429 high-demand spikes
+        candidate_models = [
+            target_model,
+            "gemini-2.5-flash",
+            "gemini-1.5-flash"
+        ]
+        # Remove duplicates while preserving order
+        unique_models = []
+        for m in candidate_models:
+            if m not in unique_models:
+                unique_models.append(m)
+
+        success = False
+        last_error = ""
+        for model_to_try in unique_models:
+            try:
+                response = client.models.generate_content_stream(
+                    model=model_to_try,
+                    contents=contents,
+                    config=config
+                )
+                first_chunk = True
+                for chunk in response:
+                    if chunk.text:
+                        yield chunk.text
+                        first_chunk = False
+                success = True
+                break  # Completed successfully
+            except Exception as e:
+                err_str = str(e)
+                last_error = err_str
+                # If 503 (high demand) or 429 (rate limit) or 404, try the next fallback model
+                if any(code in err_str for code in ["503", "429", "404", "UNAVAILABLE", "NOT_FOUND"]):
+                    continue
+                else:
+                    # Non-recoverable error (e.g. auth error)
+                    yield f"\n【Gemini API エラー】: {err_str}"
+                    return
+
+        if not success:
+            yield f"\n【Gemini API エラー（全モデル一時混雑中）】: Google側のサーバー混雑（503）が発生しています。数秒後に再度送信してください。\n詳細: {last_error}"
 
     elif provider == "openai":
         from openai import OpenAI
