@@ -58,7 +58,7 @@ st.sidebar.caption("💡 クラウド上の無料枠LLMを活用しており、�
 # Backend API Configuration (Hidden from end-users)
 provider = get_secret("LLM_PROVIDER", "gemini")
 api_key = get_secret("GEMINI_API_KEY") if provider == "gemini" else get_secret("OPENAI_API_KEY")
-model_name = get_secret("LLM_MODEL", "gemini-2.5-flash")
+model_name = get_secret("LLM_MODEL", "gemini-3.8-flash")
 
 # Main Interface
 st.title("⚖️ 著作権法・判例・SARTRAS 相談アシスタント")

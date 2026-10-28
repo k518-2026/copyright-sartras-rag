@@ -40,7 +40,7 @@ def generate_streaming_response(
             return
             
         client = genai.Client(api_key=gemini_key)
-        target_model = model_name or get_secret("LLM_MODEL", "gemini-2.5-flash")
+        target_model = model_name or get_secret("LLM_MODEL", "gemini-3.8-flash")
         
         # Extract system prompt and user conversation
         system_content = ""
