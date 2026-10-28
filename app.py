@@ -40,47 +40,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Sidebar
-st.sidebar.title("⚙️ AI モデル & API設定")
+st.sidebar.title("📖 このシステムについて")
+st.sidebar.info("""
+**著作権法・判例・SARTRAS 相談AI** は、学校教育やオンライン授業における著作物の利用ルールについて、公式法令とガイドラインを根拠に即時回答する無料の公開アシスタントです。
+""")
 
-default_provider = get_secret("LLM_PROVIDER", "gemini")
-provider = st.sidebar.selectbox(
-    "LLM プロバイダー",
-    ["gemini", "openai"],
-    index=0 if default_provider == "gemini" else 1,
-    help="Google Gemini または OpenAI を選択してください。"
-)
-
-api_key = ""
-if provider == "gemini":
-    env_gemini = get_secret("GEMINI_API_KEY", "")
-    api_key = st.sidebar.text_input(
-        "Gemini API Key",
-        value=env_gemini,
-        type="password",
-        placeholder="AIzaSy...",
-        help="Google AI Studio (https://aistudio.google.com/) で取得したAPIキー。Secrets設定済みの場合は自動入力されます"
-    )
-    model_name = st.sidebar.selectbox(
-        "モデル選択",
-        ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash", "gemini-1.5-pro"],
-        index=0
-    )
-else:
-    env_openai = get_secret("OPENAI_API_KEY", "")
-    api_key = st.sidebar.text_input(
-        "OpenAI API Key",
-        value=env_openai,
-        type="password",
-        placeholder="sk-...",
-        help="OpenAI Dashboard で取得したAPIキー。Secrets設定済みの場合は自動入力されます"
-    )
-    model_name = st.sidebar.selectbox(
-        "モデル選択",
-        ["gpt-4o-mini", "gpt-4o"],
-        index=0
-    )
-
-st.sidebar.markdown("---")
 st.sidebar.markdown("### 📚 参照ナレッジベース")
 st.sidebar.markdown("""
 - **[著作権法](https://laws.e-gov.go.jp/law/345AC0000000048)**: 第30条(私的利用), 第32条(引用), 第35条(学校教育・公衆送信補償金)等
@@ -89,7 +53,12 @@ st.sidebar.markdown("""
 """)
 
 st.sidebar.markdown("---")
-st.sidebar.caption("※ 本システムはクラウドおよびオープンソース環境向けに構築されています。")
+st.sidebar.caption("💡 クラウド上の無料枠LLMを活用しており、ユーザー登録やAPIキーの入力不要でどなたでもご利用いただけます。")
+
+# Backend API Configuration (Hidden from end-users)
+provider = get_secret("LLM_PROVIDER", "gemini")
+api_key = get_secret("GEMINI_API_KEY") if provider == "gemini" else get_secret("OPENAI_API_KEY")
+model_name = get_secret("LLM_MODEL", "gemini-2.5-flash")
 
 # Main Interface
 st.title("⚖️ 著作権法・判例・SARTRAS 相談アシスタント")

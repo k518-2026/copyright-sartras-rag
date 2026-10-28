@@ -35,7 +35,7 @@ def generate_streaming_response(
         
         gemini_key = api_key or get_secret("GEMINI_API_KEY")
         if not gemini_key:
-            yield "【エラー】GEMINI_API_KEY が設定されていません。Streamlit Secrets またはサイドバーで設定してください。"
+            yield "【システム通知】AIサーバーの初期化準備中です（管理者側のSecrets設定待ちです）。少々お待ちください。"
             return
             
         client = genai.Client(api_key=gemini_key)
