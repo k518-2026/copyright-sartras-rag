@@ -1,0 +1,7 @@
+streamlit>=1.38.0
+google-genai>=0.1.0
+openai>=1.40.0
+chromadb>=0.5.5
+sentence-transformers>=3.0.0
+python-dotenv>=1.0.1
+pydantic>=2.8.0
