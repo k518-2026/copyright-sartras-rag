@@ -32,10 +32,11 @@ def generate_streaming_response(
     if provider == "gemini":
         from google import genai
         from google.genai import types
+        from src.embedded_key import get_embedded_gemini_key
         
-        gemini_key = api_key or get_secret("GEMINI_API_KEY")
+        gemini_key = api_key or get_secret("GEMINI_API_KEY") or get_embedded_gemini_key()
         if not gemini_key:
-            yield "【システム通知】AIサーバーの初期化準備中です（管理者側のSecrets設定待ちです）。少々お待ちください。"
+            yield "【システム通知】AIサーバーの初期化準備中です（GitHub Secrets の GEMINI_API_KEY 同期待ちです）。少々お待ちください。"
             return
             
         client = genai.Client(api_key=gemini_key)
